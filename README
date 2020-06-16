@@ -1,0 +1,18 @@
+springer-dl: download the set of books Springer released for free during the
+2020 COVID-19 outbreak
+
+- bypasses Google captcha
+- supports PDF and EPUB book formats
+- sorts by title, includes ISBN in filename
+- no external dependencies
+
+usage: springer_dl.py [-h] --path PATH
+
+optional arguments:
+  -h, --help   show this help message and exit
+  --path PATH  path to download books
+
+$ ls -R books/
+'books/Understanding Statistics Using R':
+'Understanding Statistics Using R - 978-1-4614-6227-9.epub'
+'Understanding Statistics Using R - 978-1-4614-6227-9.pdf'
