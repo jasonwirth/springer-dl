@@ -4,7 +4,7 @@ import argparse
 import os
 import sys
 import urllib.parse
-from lib.util import Parser, request, download_file
+from lib.util import GithubParser, Parser, request, download_file, print_book
 
 if __name__ == '__main__':
     desc = 'springer-dl: download the set of books Springer released for free '\
@@ -12,6 +12,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument('--path', dest='path', type=str,
                         help='path to download books', required=True)
+    parser.add_argument('-t', '--filter-title', help="Keywords to filter category")
+    parser.add_argument('-c', '--filter-category', help="Keywords to filter book title")
+    parser.add_argument('--pretty', action='store_true', help="Pretty print the books.")
+    parser.add_argument('--dryrun', default=False, action="store_true",
+                        help="Print the list of links and titles. Don't download.")
     args = parser.parse_args()
 
     dl_path = args.path
@@ -25,13 +30,29 @@ if __name__ == '__main__':
     r = request(BOOK_PAGE, headers=HEADERS)
     html = r.read().decode('utf-8')
 
-    p = Parser()
+    p = GithubParser()
     p.feed(html)
 
     prefix = 'http://link.springer.com/openurl'
-    books = [(x, x.split('isbn=')[1]) for x in p.links if x.startswith(prefix)]
+    books = [book for book in p.links if book.href.startswith(prefix)]
 
-    for url, isbn in books:
+    if args.filter_title:
+        text = args.filter_title.lower()
+        books = [b for b in books if text in b.title.lower()]
+    
+    if args.filter_category:
+        text = args.filter_category.lower()
+        books = [b for b in books if text in b.category.lower()]        
+
+    if args.dryrun:
+        for b in books:
+            if args.pretty:
+                print_book(b)
+            else:
+                print(b)
+        sys.exit()
+
+    for url, isbn, category, title in books:
         r = request(url, HEADERS)
         end_url = r.url
 
